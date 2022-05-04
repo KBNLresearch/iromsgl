@@ -774,10 +774,6 @@ def getConfiguration():
     config.prefixBatch = findElementText(configElt, './config/prefixBatch')
     config.audioFormat = findElementText(configElt, './config/audioFormat')
     config.reportFormatString = findElementText(configElt, './config/reportFormatString')
-    config.prebatchExe = findElementText(configElt, './config/prebatchExe')
-    config.loadExe = findElementText(configElt, './config/loadExe')
-    config.unloadExe = findElementText(configElt, './config/unloadExe')
-    config.rejectExe = findElementText(configElt, './config/rejectExe')
     config.isoBusterExe = findElementText(configElt, './config/isoBusterExe')
     config.dBpowerampConsoleRipExe = findElementText(configElt, './config/dBpowerampConsoleRipExe')
  
@@ -816,10 +812,6 @@ def getConfiguration():
     # Normalise all file paths
     config.rootDir = os.path.normpath(config.rootDir)
     config.tempDir = os.path.normpath(config.tempDir)
-    config.prebatchExe = os.path.normpath(config.prebatchExe)
-    config.loadExe = os.path.normpath(config.loadExe)
-    config.unloadExe = os.path.normpath(config.unloadExe)
-    config.rejectExe = os.path.normpath(config.rejectExe)
     config.isoBusterExe = os.path.normpath(config.isoBusterExe)
     config.dBpowerampConsoleRipExe = os.path.normpath(config.dBpowerampConsoleRipExe)
 
@@ -828,13 +820,10 @@ def getConfiguration():
     config.flacExe = os.path.join(toolsDirUser, 'flac', 'win64', 'flac.exe')
     config.cdInfoExe = os.path.join(toolsDirUser, 'libcdio', 'win64', 'cd-info.exe')
 
+    """Disable for Linux testing TODO re-enable in production version!!
     # Check if all files and directories exist, and exit if not
     checkDirExists(config.rootDir)
     checkDirExists(config.tempDir)
-    checkFileExists(config.prebatchExe)
-    checkFileExists(config.loadExe)
-    checkFileExists(config.unloadExe)
-    checkFileExists(config.rejectExe)
     checkFileExists(config.isoBusterExe)
     checkFileExists(config.dBpowerampConsoleRipExe)
     checkFileExists(config.shntoolExe)
@@ -847,7 +836,7 @@ def getConfiguration():
     if config.cdDriveLetter not in cdDrives:
         msg = '"' + config.cdDriveLetter + '" is not a valid optical drive!'
         errorExit(msg)
-
+    """
     # Check that audioFormat is wav or flac
     if config.audioFormat not in ["wav", "flac"]:
         msg = '"' + config.audioFormat + '" is not a valid audio format (expected "wav" or "flac")!'
