@@ -25,6 +25,7 @@ import threading
 import uuid
 import logging
 import json
+import platform
 import queue
 import tkinter as tk
 from tkinter import filedialog as tkFileDialog
@@ -717,17 +718,26 @@ def getConfiguration():
     config.py and check that all file paths / executables exist.
     This assumes an non-frozen script (no Py2Exe!)
     """
-
-    # Locate Windows profile directory
-    userDir = os.environ['USERPROFILE']
-    
-    # Locate package directory
-    packageDir = os.path.dirname(os.path.abspath(__file__))
-    # Config directory
-    configDirUser = os.path.join(userDir, 'iromlab')
-    configFileUser = os.path.join(configDirUser, 'config.xml')
-    # Tools directory
-    toolsDirUser = os.path.join(packageDir, 'tools')
+    # Following if/else block for testing only
+    # TODO remove in production version (and use Windows-specific behaviour) 
+    if platform.system() == "Windows":
+        # Locate Windows profile directory
+        userDir = os.environ['USERPROFILE']
+        
+        # Locate package directory
+        packageDir = os.path.dirname(os.path.abspath(__file__))
+        # Config directory
+        configDirUser = os.path.join(userDir, 'iromlab')
+        configFileUser = os.path.join(configDirUser, 'config.xml')
+        # Tools directory
+        toolsDirUser = os.path.join(packageDir, 'tools')
+    else:
+        # Only for development/testing on Linux
+        packageDir = os.path.dirname(os.path.abspath(__file__))
+        configDirUser = os.path.join(packageDir, "conf")
+        configFileUser = os.path.join(configDirUser, 'config.xml')
+        # Tools directory
+        toolsDirUser = os.path.join(packageDir, 'tools')
 
     # Check if user config file exists and exit if not
     if not os.path.isfile(configFileUser):
