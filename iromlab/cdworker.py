@@ -11,8 +11,10 @@ import glob
 import csv
 import hashlib
 import logging
-import pythoncom
-import wmi
+import platform
+if platform.system() == "Windows":
+    import pythoncom
+    import wmi
 import _thread as thread
 from . import config
 from . import drivers
