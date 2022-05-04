@@ -17,7 +17,6 @@ if platform.system() == "Windows":
     import wmi
 import _thread as thread
 from . import config
-from . import drivers
 from . import cdinfo
 from . import isobuster
 from . import dbpoweramp
@@ -482,12 +481,6 @@ def cdWorker():
         # Write header to batch manifest and close file
         csvBm.writerow(headerBatchManifest)
         bm.close()
-
-    # Initialise batch
-    logging.info('*** Initialising batch ***')
-    resultPrebatch = drivers.prebatch()
-    logging.info(''.join(['prebatch command: ', resultPrebatch['cmdStr']]))
-    logging.info(''.join(['prebatch command output: ', resultPrebatch['log'].strip()]))
 
     # Flag that marks end of batch (main processing loop keeps running while False)
     endOfBatchFlag = False
