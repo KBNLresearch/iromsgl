@@ -372,20 +372,13 @@ class carrierEntry(tk.Frame):
 
                 # Create unique identifier for this job (UUID, based on host ID and current time)
                 jobID = str(uuid.uuid1())
-                # Create and populate Job file
-                jobFile = os.path.join(config.jobsFolder, jobID + ".txt")
 
-                fJob = open(jobFile, "w", encoding="utf-8")
-
-                # Create CSV writer object
-                jobCSV = csv.writer(fJob, lineterminator='\n')
-
-                # Row items to list
-                rowItems = ([jobID, catid, title, volumeNo])
-
-                # Write row to job and close file
-                jobCSV.writerow(rowItems)
-                fJob.close()
+                # Set up dictionary that holds carrier data
+                carrierData = {}
+                carrierData['jobID'] = jobID
+                carrierData['PPN'] = catid
+                carrierData['title'] = title
+                carrierData['volumeNo'] = volumeNo
 
                 # Display PPN/Title + Volume number in treeview widget
                 self.tv.insert('', 0, text=str(self.carrierNumber), values=(catid, title, volumeNo))
@@ -399,16 +392,29 @@ class carrierEntry(tk.Frame):
 
                 self.volumeNo_entry.config(state='disabled')
                 self.submit_button.config(state='disabled')
+                
+                # Process carrier in separate thread
+                t3 = threading.Thread(target=cdworker.processDisc, args=[carrierData])
+                t3.start()
+                t3.join()
 
                 # Reset entry fields and set focus on PPN / Title field
                 if config.enablePPNLookup:
                     self.catid_entry.delete(0, tk.END)
                     self.catid_entry.focus_set()
+                    self.catid_entry.config(state='enabled')
+                    self.usepreviousPPN_button.config(state='enabled')
                 else:
                     self.title_entry.delete(0, tk.END)
                     self.title_entry.focus_set()
+                    self.title_entry(state='enabled')
+                    self.usepreviousTitle_button.config(state='enabled')
+
                 self.volumeNo_entry.delete(0, tk.END)
                 self.volumeNo_entry.insert(tk.END, "1")
+                self.volumeNo_entry.config(state='enabled')
+                self.submit_button.config(state='enabled')
+
 
     def setupLogger(self):
         """Set up logging-related settings"""
