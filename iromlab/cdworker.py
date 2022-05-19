@@ -314,54 +314,6 @@ def processDisc(carrierData):
     return success
 
 
-def processDiscTest(carrierData):
-    """Dummy version of processDisc function that doesn't do any actual imaging
-    used for testing only
-    """
-    jobID = carrierData['jobID']
-    logging.info(''.join(['### Job identifier: ', jobID]))
-    logging.info(''.join(['PPN: ', carrierData['PPN']]))
-    logging.info(''.join(['Title: ', carrierData['title']]))
-    logging.info(''.join(['Volume number: ', carrierData['volumeNo']]))
-
-    # Create dummy carrierInfo dictionary (values are needed for batch manifest)
-    carrierInfo = {}
-    carrierInfo['containsAudio'] = False
-    carrierInfo['containsData'] = False
-    carrierInfo['cdExtra'] = False
-
-    success = True
-
-    # Create comma-delimited batch manifest entry for this carrier
-
-    # Dummy value for VolumeIdentifier
-    volumeID = 'DUMMY'
-
-    # Put all items for batch manifest entry in a list
-
-    rowBatchManifest = ([jobID,
-                         carrierData['PPN'],
-                         carrierData['volumeNo'],
-                         carrierData['title'],
-                         volumeID,
-                         str(success),
-                         str(carrierInfo['containsAudio']),
-                         str(carrierInfo['containsData']),
-                         str(carrierInfo['cdExtra'])])
-
-    # Open batch manifest in append mode
-    bm = open(config.batchManifest, "a", encoding="utf-8")
-
-    # Create CSV writer object
-    csvBm = csv.writer(bm, lineterminator='\n')
-
-    # Write row to batch manifest and close file
-    csvBm.writerow(rowBatchManifest)
-    bm.close()
-
-    return success
-
-
 def quitIromlab():
     """Send KeyboardInterrupt after user pressed Exit button"""
     logging.info('*** Quitting because user pressed Exit ***')
