@@ -99,21 +99,37 @@ class carrierEntry(tk.Frame):
             msg = 'Cannot create batch folder ' + config.batchFolder
             tkMessageBox.showerror("Error", msg)
 
-        # Create jobs folder
-        config.jobsFolder = os.path.join(config.batchFolder, 'jobs')
-        try:
-            os.makedirs(config.jobsFolder)
-        except IOError:
-            msg = 'Cannot create jobs folder ' + config.jobsFolder
-            tkMessageBox.showerror("Error", msg)
+        # Write Iromlab version to file in batch
+        versionFile = os.path.join(config.batchFolder, 'version.txt')
+        with open(versionFile, "w") as vf:
+            vf.write(config.version + '\n')
 
-        # Create failed jobs folder (if a job fails it will be moved here)
-        config.jobsFailedFolder = os.path.join(config.batchFolder, 'jobsFailed')
-        try:
-            os.makedirs(config.jobsFailedFolder)
-        except IOError:
-            msg = 'Cannot create failed jobs folder ' + config.jobsFailedFolder
-            tkMessageBox.showerror("Error", msg)
+        # Define batch manifest (CSV file with minimal metadata on each carrier)
+        config.batchManifest = os.path.join(config.batchFolder, 'manifest.csv')
+
+        # Write header row if batch manifest doesn't exist already
+        if not os.path.isfile(config.batchManifest):
+            headerBatchManifest = (['jobID',
+                                    'PPN',
+                                    'volumeNo',
+                                    'title',
+                                    'volumeID',
+                                    'success',
+                                    'containsAudio',
+                                    'containsData',
+                                    'cdExtra',
+                                    'mixedMode',
+                                    'cdInteractive'])
+
+        # Open batch manifest in append mode
+        bm = open(config.batchManifest, "a", encoding="utf-8")
+
+        # Create CSV writer object
+        csvBm = csv.writer(bm, lineterminator='\n')
+
+        # Write header to batch manifest and close file
+        csvBm.writerow(headerBatchManifest)
+        bm.close()
 
         # Set up logging
         successLogger = True
@@ -402,18 +418,18 @@ class carrierEntry(tk.Frame):
                 if config.enablePPNLookup:
                     self.catid_entry.delete(0, tk.END)
                     self.catid_entry.focus_set()
-                    self.catid_entry.config(state='enabled')
-                    self.usepreviousPPN_button.config(state='enabled')
+                    self.catid_entry.config(state='normal')
+                    self.usepreviousPPN_button.config(state='normal')
                 else:
                     self.title_entry.delete(0, tk.END)
                     self.title_entry.focus_set()
-                    self.title_entry(state='enabled')
-                    self.usepreviousTitle_button.config(state='enabled')
+                    self.title_entry(state='normal')
+                    self.usepreviousTitle_button.config(state='normal')
 
                 self.volumeNo_entry.delete(0, tk.END)
                 self.volumeNo_entry.insert(tk.END, "1")
-                self.volumeNo_entry.config(state='enabled')
-                self.submit_button.config(state='enabled')
+                self.volumeNo_entry.config(state='normal')
+                self.submit_button.config(state='normal')
 
 
     def setupLogger(self):
@@ -866,9 +882,6 @@ def main():
     myCarrierEntry = carrierEntry(root)
     # This ensures application quits normally if user closes window
     root.protocol('WM_DELETE_WINDOW', myCarrierEntry.on_quit)
-    # Start worker as separate thread
-    t1 = threading.Thread(target=cdworker.cdWorker, args=[])
-    t1.start()
     # Start socket API as separate thread
     if config.enableSocketAPI:
         q = queue.Queue()
@@ -886,7 +899,6 @@ def main():
             time.sleep(0.1)
         except KeyboardInterrupt:
             if config.finishedBatch:
-                t1.join()
                 handlers = myCarrierEntry.logger.handlers[:]
                 for handler in handlers:
                     handler.close()
@@ -896,13 +908,9 @@ def main():
                 tkMessageBox.showinfo("Finished", msg)
                 # Reset the GUI
                 myCarrierEntry.reset_gui()
-                # Start cdworker
                 root.protocol('WM_DELETE_WINDOW', myCarrierEntry.on_quit)
-                t1 = threading.Thread(target=cdworker.cdWorker, args=[])
-                t1.start()
             elif config.quitFlag:
                 # User pressed exit
-                t1.join()
                 if config.enableSocketAPI:
                     t2.join()
                 handlers = myCarrierEntry.logger.handlers[:]
