@@ -3,6 +3,7 @@
 
 import os
 import io
+import time
 from isolyzer import isolyzer
 from . import config
 from . import shared
@@ -36,6 +37,10 @@ def extractData(writeDirectory, session, dataTrackLSNStart):
     cmdStr = " ".join(args)
 
     status, out, err = shared.launchSubProcess(args)
+
+    ## TEST this is needed to avoid FileNotFoundError while testing in VM
+    time.sleep(2)
+    ## TEST
 
     # Open and read log file
     with io.open(logFile, "r", encoding="cp1252") as fLog:
