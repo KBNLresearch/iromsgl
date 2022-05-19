@@ -390,6 +390,16 @@ class carrierEntry(tk.Frame):
                 # Display PPN/Title + Volume number in treeview widget
                 self.tv.insert('', 0, text=str(self.carrierNumber), values=(catid, title, volumeNo))
 
+                if config.enablePPNLookup:
+                    self.catid_entry.config(state='disabled')
+                    self.usepreviousPPN_button.config(state='disabled')
+                else:
+                    self.title_entry(state='disabled')
+                    self.usepreviousTitle_button.config(state='disabled')
+
+                self.volumeNo_entry.config(state='disabled')
+                self.submit_button.config(state='disabled')
+
                 # Reset entry fields and set focus on PPN / Title field
                 if config.enablePPNLookup:
                     self.catid_entry.delete(0, tk.END)
@@ -820,7 +830,7 @@ def getConfiguration():
     config.flacExe = os.path.join(toolsDirUser, 'flac', 'win64', 'flac.exe')
     config.cdInfoExe = os.path.join(toolsDirUser, 'libcdio', 'win64', 'cd-info.exe')
 
-    """Disable for Linux testing TODO re-enable in production version!!
+    #"""Disable for Linux testing TODO re-enable in production version!!
     # Check if all files and directories exist, and exit if not
     checkDirExists(config.rootDir)
     checkDirExists(config.tempDir)
@@ -836,7 +846,7 @@ def getConfiguration():
     if config.cdDriveLetter not in cdDrives:
         msg = '"' + config.cdDriveLetter + '" is not a valid optical drive!'
         errorExit(msg)
-    """
+    #"""
     # Check that audioFormat is wav or flac
     if config.audioFormat not in ["wav", "flac"]:
         msg = '"' + config.audioFormat + '" is not a valid audio format (expected "wav" or "flac")!'
