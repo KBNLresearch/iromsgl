@@ -72,7 +72,6 @@ class carrierEntry(tk.Frame):
         """
         config.quitFlag = True
         self.bExit.config(state='disabled')
-        self.bFinalise.config(state='disabled')
         if config.batchIsOpen:
             msg = 'User pressed Exit, quitting after current disc has been processed'
             tkMessageBox.showinfo("Info", msg)
@@ -165,7 +164,6 @@ class carrierEntry(tk.Frame):
             # Update state of buttons / widgets
             self.bNew.config(state='disabled')
             self.bOpen.config(state='disabled')
-            self.bFinalise.config(state='normal')
             if config.enablePPNLookup:
                 self.catid_entry.config(state='normal')
                 self.usepreviousPPN_button.config(state='normal')
@@ -219,7 +217,6 @@ class carrierEntry(tk.Frame):
                 # finalized by user
                 self.bNew.config(state='disabled')
                 self.bOpen.config(state='disabled')
-                self.bFinalise.config(state='normal')
                 self.submit_button.config(state='normal')
                 if config.enablePPNLookup:
                     self.catid_entry.config(state='normal')
@@ -237,33 +234,6 @@ class carrierEntry(tk.Frame):
                 # in which case readyToStart is set to True on finalisation
                 if not config.startOnFinalize:
                     config.readyToStart = True
-
-    def on_finalise(self, event=None):
-        """Finalise batch after user pressed finalise button"""
-        msg = ("This will finalise the current batch.\n After finalising no further"
-               "carriers can be \nadded. Are you really sure you want to do this?")
-        if tkMessageBox.askyesno("Confirm", msg):
-            # Create End Of Batch job file; this will tell the main worker processing
-            # loop to stop
-
-            jobFile = 'eob.txt'
-            fJob = open(os.path.join(config.jobsFolder, jobFile), "w", encoding="utf-8")
-            lineOut = 'EOB\n'
-            fJob.write(lineOut)
-            self.bFinalise.config(state='disabled')
-            self.submit_button.config(state='disabled')
-            if config.enablePPNLookup:
-                self.catid_entry.config(state='disabled')
-                self.usepreviousPPN_button.config(state='disabled')
-            else:
-                self.title_entry.config(state='disabled')
-                self.usepreviousTitle_button.config(state='disabled')
-            self.volumeNo_entry.delete(0, tk.END)
-            self.volumeNo_entry.config(state='disabled')
-            
-            # If the startOnFinalize option was activated, set readyToStart flag to True
-            if config.startOnFinalize:
-                config.readyToStart = True
 
     def on_usepreviousPPN(self, event=None):
         """Add previously entered PPN to entry field"""
@@ -463,13 +433,6 @@ class carrierEntry(tk.Frame):
                                underline=0,
                                command=self.on_open)
         self.bOpen.grid(column=1, row=1, sticky='ew')
-        self.bFinalise = tk.Button(self,
-                                   text="Finalize",
-                                   height=2,
-                                   width=4,
-                                   underline=0,
-                                   command=self.on_finalise)
-        self.bFinalise.grid(column=2, row=1, sticky='ew')
         self.bExit = tk.Button(self,
                                text="Exit",
                                height=2,
@@ -478,8 +441,6 @@ class carrierEntry(tk.Frame):
                                command=self.on_quit)
         self.bExit.grid(column=3, row=1, sticky='ew')
 
-        # Disable finalise button on startup
-        self.bFinalise.config(state='disabled')
 
         ttk.Separator(self, orient='horizontal').grid(column=0, row=2, columnspan=4, sticky='ew')
 
@@ -557,7 +518,6 @@ class carrierEntry(tk.Frame):
         # Define bindings for keyboard shortcuts: buttons
         self.root.bind_all('<Control-Key-n>', self.on_create)
         self.root.bind_all('<Control-Key-o>', self.on_open)
-        self.root.bind_all('<Control-Key-f>', self.on_finalise)
         self.root.bind_all('<Control-Key-e>', self.on_quit)
         self.root.bind_all('<Control-Key-s>', self.on_submit)
 
@@ -613,7 +573,6 @@ class carrierEntry(tk.Frame):
         # Update state of buttons / widgets
         self.bNew.config(state='normal')
         self.bOpen.config(state='normal')
-        self.bFinalise.config(state='disabled')
         self.bExit.config(state='normal')
         self.submit_button.config(state='disabled')
         if config.enablePPNLookup:
