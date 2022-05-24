@@ -589,8 +589,6 @@ class carrierEntry(tk.Frame):
         """Reset the carrier entry fields"""
         # Reset and ere-enable entry fields, and set focus on PPN / Title field
 
-        print("Resetting carrier fields")
-
         if config.enablePPNLookup:
             self.usepreviousPPN_button.config(state='normal')
             self.catid_entry.config(state='normal')
@@ -903,7 +901,6 @@ def main():
             root.update()
             time.sleep(0.1)
             if config.finishedDisc:
-                print("finishedDisc = True")
                 myCarrierEntry.t1.join()
                 myCarrierEntry.reset_carrier()
                 config.finishedDisc = False

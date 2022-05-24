@@ -312,6 +312,8 @@ def processDisc(carrierData):
     csvBm.writerow(rowBatchManifest)
     bm.close()
 
+    logging.info('*** Finished processing disc ***')
+
     # Set finishedDisc flag
     config.finishedDisc = True
 
