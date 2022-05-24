@@ -32,4 +32,5 @@ quitFlag = False
 batchIsOpen = False
 readyToStart = False
 finishedDisc = False
+processingDisc = False
 finishedBatch = False

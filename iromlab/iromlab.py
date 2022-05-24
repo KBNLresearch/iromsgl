@@ -77,16 +77,22 @@ class carrierEntry(tk.Frame):
             msg = 'User pressed Exit, quitting after current disc has been processed'
             tkMessageBox.showinfo("Info", msg)
 
-        # Wait until finishedDisc flag is reset to True
-        while not config.finishedDisc:
-            time.sleep(2)
-
-        # Wait 1 more second to avoid race condition
-        time.sleep(2)
-
         msg = 'Quitting because user pressed Exit, click OK to exit'
-        tkMessageBox.showinfo("Exit", msg)
-        os._exit(0)
+
+        if not config.readyToStart:
+            # User hasn't yet created or opened a batch
+            time.sleep(2)
+            tkMessageBox.showinfo("Exit", msg)
+            os._exit(0)
+        else:
+            # User has created or opened a batch
+            # Wait until processingDisc flag is reset to False
+            while config.processingDisc:
+                time.sleep(2)
+            # Wait 1 more second to avoid race condition
+            time.sleep(2)           
+            tkMessageBox.showinfo("Exit", msg)
+            os._exit(0)
 
     def on_create(self, event=None):
         """Create new batch in rootDir"""
@@ -288,6 +294,8 @@ class carrierEntry(tk.Frame):
 
     def on_submit(self, event=None):
         """Process one record and add it to the queue after user pressed submit button"""
+
+        config.processingDisc = True
 
         self.carrierNumber += 1
 
@@ -876,6 +884,7 @@ def main():
             if config.finishedDisc:
                 myCarrierEntry.t1.join()
                 myCarrierEntry.reset_carrier()
+                config.processingDisc = False
                 config.finishedDisc = False
         except KeyboardInterrupt:
             if config.finishedBatch:
