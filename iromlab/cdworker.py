@@ -311,6 +311,10 @@ def processDisc(carrierData):
     # Write row to batch manifest and close file
     csvBm.writerow(rowBatchManifest)
     bm.close()
+
+    # Set finishedDisc flag
+    config.finishedDisc = True
+
     return success
 
 

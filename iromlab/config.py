@@ -31,4 +31,5 @@ enableSocketAPI = False
 quitFlag = False
 batchIsOpen = False
 readyToStart = False
+finishedDisc = False
 finishedBatch = False

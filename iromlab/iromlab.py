@@ -63,6 +63,7 @@ class carrierEntry(tk.Frame):
         self.titleOld = ""
         self.volumeNoOld = ""
         self.carrierNumber = 0
+        self.t1 = None
         self.build_gui()
 
     def on_quit(self, event=None):
@@ -410,26 +411,8 @@ class carrierEntry(tk.Frame):
                 self.submit_button.config(state='disabled')
                 
                 # Process carrier in separate thread
-                t3 = threading.Thread(target=cdworker.processDisc, args=[carrierData])
-                t3.start()
-                t3.join()
-
-                # Reset entry fields and set focus on PPN / Title field
-                if config.enablePPNLookup:
-                    self.catid_entry.delete(0, tk.END)
-                    self.catid_entry.focus_set()
-                    self.catid_entry.config(state='normal')
-                    self.usepreviousPPN_button.config(state='normal')
-                else:
-                    self.title_entry.delete(0, tk.END)
-                    self.title_entry.focus_set()
-                    self.title_entry(state='normal')
-                    self.usepreviousTitle_button.config(state='normal')
-
-                self.volumeNo_entry.delete(0, tk.END)
-                self.volumeNo_entry.insert(tk.END, "1")
-                self.volumeNo_entry.config(state='normal')
-                self.submit_button.config(state='normal')
+                self.t1 = threading.Thread(target=cdworker.processDisc, args=[carrierData])
+                self.t1.start()
 
 
     def setupLogger(self):
@@ -601,6 +584,28 @@ class carrierEntry(tk.Frame):
 
         for child in self.winfo_children():
             child.grid_configure(padx=5, pady=5)
+
+    def reset_carrier(self):
+        """Reset the carrier entry fields"""
+        # Reset and ere-enable entry fields, and set focus on PPN / Title field
+
+        print("Resetting carrier fields")
+
+        if config.enablePPNLookup:
+            self.usepreviousPPN_button.config(state='normal')
+            self.catid_entry.config(state='normal')
+            self.catid_entry.delete(0, tk.END)
+            self.catid_entry.focus_set()
+        else:
+            self.title_entry(state='normal')
+            self.usepreviousTitle_button.config(state='normal')
+            self.title_entry.delete(0, tk.END)
+            self.title_entry.focus_set()
+
+        self.volumeNo_entry.config(state='normal')
+        self.submit_button.config(state='normal')
+        self.volumeNo_entry.delete(0, tk.END)
+        self.volumeNo_entry.insert(tk.END, "1")
 
     def reset_gui(self):
         """Reset the GUI"""
@@ -897,6 +902,11 @@ def main():
             root.update_idletasks()
             root.update()
             time.sleep(0.1)
+            if config.finishedDisc:
+                print("finishedDisc = True")
+                myCarrierEntry.t1.join()
+                myCarrierEntry.reset_carrier()
+                config.finishedDisc = False
         except KeyboardInterrupt:
             if config.finishedBatch:
                 handlers = myCarrierEntry.logger.handlers[:]
