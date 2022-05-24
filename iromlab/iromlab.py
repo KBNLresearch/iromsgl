@@ -184,80 +184,48 @@ class carrierEntry(tk.Frame):
         options['parent'] = self.root
         options['title'] = 'Select batch directory'
         config.batchFolder = tkFileDialog.askdirectory(**self.dir_opt)
-        config.jobsFolder = os.path.join(config.batchFolder, 'jobs')
-        config.jobsFailedFolder = os.path.join(config.batchFolder, 'jobsFailed')
+        config.batchManifest = os.path.join(config.batchFolder, 'manifest.csv')
 
-        # Check if batch was already finalized, and exit if so 
-        if not os.path.isdir(config.jobsFolder):
-            msg = 'cannot open finalized batch'
-            tkMessageBox.showerror("Error", msg)
-        else:
-            # Set up logging
-            successLogger = True
+        # Set up logging
+        successLogger = True
 
-            try:
-                self.setupLogger()
-                # Start polling log messages from the queue
-                self.after(100, self.poll_log_queue)
-            except OSError:
-                # Something went wrong while trying to write to lof file
-                msg = ('error trying to write log file')
-                tkMessageBox.showerror("ERROR", msg)
-                successLogger = False
+        try:
+            self.setupLogger()
+            # Start polling log messages from the queue
+            self.after(100, self.poll_log_queue)
+        except OSError:
+            # Something went wrong while trying to write to lof file
+            msg = ('error trying to write log file')
+            tkMessageBox.showerror("ERROR", msg)
+            successLogger = False
 
-            if successLogger:
-                logging.info(''.join(['*** Opening existing batch ', config.batchFolder, ' ***']))
+        if successLogger:
+            logging.info(''.join(['*** Opening existing batch ', config.batchFolder, ' ***']))
 
-                if config.batchFolder != '':
-                    # Import info on jobs in queue to the treeview widget
+            if config.batchFolder != '':
 
-                    # Get directory listing of job files sorted by creation time
-                    jobFiles = list(filter(os.path.isfile, glob.glob(config.jobsFolder + '/*')))
-                    jobFiles.sort(key=lambda x: os.path.getctime(x))
-                    jobCount = 1
+                # Update state of buttons /widgets, taking into account whether batch was
+                # finalized by user
+                self.bNew.config(state='disabled')
+                self.bOpen.config(state='disabled')
+                self.bFinalise.config(state='normal')
+                self.submit_button.config(state='normal')
+                if config.enablePPNLookup:
+                    self.catid_entry.config(state='normal')
+                    self.usepreviousPPN_button.config(state='normal')
+                else:
+                    self.title_entry.config(state='normal')
+                    self.usepreviousTitle_button.config(state='normal')
+                self.volumeNo_entry.config(state='normal')
+                self.volumeNo_entry.delete(0, tk.END)
+                self.volumeNo_entry.insert(tk.END, "1")
 
-                    for job in  jobFiles:
-                         # Open job file, read contents to list
-                        fj = open(job, "r", encoding="utf-8")
-                        fjCSV = csv.reader(fj)
-                        jobList = next(fjCSV)
-                        fj.close()
-
-                        if jobList[0] != 'EOB':
-                            PPN = jobList[1]
-                            title = jobList[2]
-                            volumeNo = jobList[3]
-
-                            # Add PPN/Title + Volume number to treeview widget
-                            self.tv.insert('', 0, text=str(jobCount), values=(PPN, title, volumeNo))
-                            jobCount += 1
-
-                    # Update state of buttons /widgets, taking into account whether batch was
-                    # finalized by user
-                    self.bNew.config(state='disabled')
-                    self.bOpen.config(state='disabled')
-                    if os.path.isfile(os.path.join(config.jobsFolder, 'eob.txt')):
-                        self.bFinalise.config(state='disabled')
-                        self.submit_button.config(state='disabled')
-                    else:
-                        self.bFinalise.config(state='normal')
-                        self.submit_button.config(state='normal')
-                    if config.enablePPNLookup:
-                        self.catid_entry.config(state='normal')
-                        self.usepreviousPPN_button.config(state='normal')
-                    else:
-                        self.title_entry.config(state='normal')
-                        self.usepreviousTitle_button.config(state='normal')
-                    self.volumeNo_entry.config(state='normal')
-                    self.volumeNo_entry.delete(0, tk.END)
-                    self.volumeNo_entry.insert(tk.END, "1")
-
-                    # Flag that is True if batch is open
-                    config.batchIsOpen = True
-                    # Set readyToStart flag to True, except if startOnFinalize flag is activated,
-                    # in which case readyToStart is set to True on finalisation
-                    if not config.startOnFinalize:
-                        config.readyToStart = True
+                # Flag that is True if batch is open
+                config.batchIsOpen = True
+                # Set readyToStart flag to True, except if startOnFinalize flag is activated,
+                # in which case readyToStart is set to True on finalisation
+                if not config.startOnFinalize:
+                    config.readyToStart = True
 
     def on_finalise(self, event=None):
         """Finalise batch after user pressed finalise button"""
